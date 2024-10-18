@@ -1,13 +1,12 @@
 const express = require('express');
-const authMiddleware = require('../middleware/auth');
-const { addSpace, getSpaces } = require('../controllers/spaceController');
-
+const { addSpace, editSpace, deleteSpace, getSpaces } = require('../controllers/spaceController');
+const auth = require('../middleware/auth');
 const router = express.Router();
 
-// Ruta protegida para agregar un espacio
-router.post('/', authMiddleware, addSpace);
-
-// Ruta para obtener todos los espacios (puedes decidir si quieres proteger esto o no)
-router.get('/', getSpaces);
+// Rutas de gestión de espacios
+router.post('/', auth, addSpace); // Agregar espacio
+router.put('/:id', auth, editSpace); // Editar espacio
+router.delete('/:id', auth, deleteSpace); // Eliminar espacio
+router.get('/', auth, getSpaces); // Listar espacios
 
 module.exports = router;

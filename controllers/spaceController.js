@@ -2,7 +2,7 @@ const Space = require('../models/Space');
 
 // Agregar un nuevo espacio
 const addSpace = async (req, res) => {
-    const { name, location, capacity, price } = req.body;
+    const { name, location, capacity, price, description } = req.body;
 
     try {
         const space = new Space({
@@ -10,10 +10,44 @@ const addSpace = async (req, res) => {
             location,
             capacity,
             price,
+            description, // Asegúrate de tener este campo en tu modelo
         });
 
         await space.save();
         res.status(201).json(space);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error en el servidor');
+    }
+};
+
+// Editar un espacio existente
+const editSpace = async (req, res) => {
+    const { id } = req.params;
+    const updates = req.body;
+
+    try {
+        const space = await Space.findByIdAndUpdate(id, updates, { new: true });
+        if (!space) {
+            return res.status(404).json({ msg: 'Espacio no encontrado' });
+        }
+        res.json(space);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error en el servidor');
+    }
+};
+
+// Eliminar un espacio
+const deleteSpace = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const space = await Space.findByIdAndDelete(id);
+        if (!space) {
+            return res.status(404).json({ msg: 'Espacio no encontrado' });
+        }
+        res.json({ msg: 'Espacio eliminado' });
     } catch (err) {
         console.error(err);
         res.status(500).send('Error en el servidor');
@@ -31,4 +65,4 @@ const getSpaces = async (req, res) => {
     }
 };
 
-module.exports = { addSpace, getSpaces };
+module.exports = { addSpace, editSpace, deleteSpace, getSpaces };

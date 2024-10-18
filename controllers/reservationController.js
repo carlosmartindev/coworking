@@ -1,16 +1,25 @@
-const Reservation = require('../models/Reservation'); // Necesitamos crear este modelo
+const Reservation = require('../models/Reservation');
 const Space = require('../models/Space');
 
-// Crear una nueva reserva
 const createReservation = async (req, res) => {
     const { spaceId, date } = req.body;
-    const userId = req.user.id; // Obtiene el id del usuario autenticado
+    const userId = req.user.id;
 
     try {
         // Verifica que el espacio exista
         const space = await Space.findById(spaceId);
         if (!space) {
             return res.status(404).json({ msg: 'Espacio no encontrado' });
+        }
+
+        // Verifica si ya hay una reserva en esa fecha para el mismo espacio
+        const existingReservation = await Reservation.findOne({
+            spaceId,
+            date,
+        });
+
+        if (existingReservation) {
+            return res.status(400).json({ msg: 'El espacio ya está reservado en esta fecha' });
         }
 
         // Crea la nueva reserva
@@ -21,6 +30,10 @@ const createReservation = async (req, res) => {
         });
 
         await reservation.save();
+
+        // Eliminar el envío de correo
+        // res.status(201).json(reservation); // Comentar o eliminar la línea del envío de correo
+
         res.status(201).json(reservation);
     } catch (err) {
         console.error(err);
@@ -28,7 +41,6 @@ const createReservation = async (req, res) => {
     }
 };
 
-// Obtener todas las reservas de un usuario
 const getReservations = async (req, res) => {
     const userId = req.user.id;
 
